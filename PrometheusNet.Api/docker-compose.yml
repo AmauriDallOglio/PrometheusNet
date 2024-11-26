@@ -1,0 +1,23 @@
+﻿version: '3'
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  prometheusnet-api:
+    image: prometheusnetapi:dev
+    container_name: prometheusnet-api
+    ports:
+      - "8080:8080"
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
