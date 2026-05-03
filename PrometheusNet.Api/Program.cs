@@ -1,3 +1,4 @@
+using OpenTelemetry.Metrics;
 using Prometheus;
 using PrometheusNet.Api.Core.Dominio.Entidade;
 using PrometheusNet.Api.Core.Infra.Repositorio;
@@ -17,6 +18,16 @@ namespace PrometheusNet.Api
 
             // Registro do repositório de mensagens
             builder.Services.AddSingleton<MensagemRepositorio>();
+
+
+
+            builder.Services.AddOpenTelemetry()
+                .WithMetrics(metrics =>
+                {
+                    metrics.AddAspNetCoreInstrumentation()
+                           .AddHttpClientInstrumentation()
+                           .AddPrometheusExporter();
+                });
 
             var app = builder.Build();
 
@@ -60,6 +71,8 @@ namespace PrometheusNet.Api
 
                 return Results.Ok(mensagem);
             });
+
+            app.MapPrometheusScrapingEndpoint().AllowAnonymous();
 
             app.Run();
         }
