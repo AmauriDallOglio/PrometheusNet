@@ -11,12 +11,12 @@ namespace PrometheusNet.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Adicionar serviços ao contêiner
+            // Adicionar serviï¿½os ao contï¿½iner
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // Registro do repositório de mensagens
+            // Registro do repositï¿½rio de mensagens
             builder.Services.AddSingleton<MensagemRepositorio>();
 
 
@@ -34,7 +34,7 @@ namespace PrometheusNet.Api
 
             var app = builder.Build();
 
-            // Configurações de ambiente de desenvolvimento
+            // ConfiguraÃ§oes de ambiente de desenvolvimento
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -44,39 +44,41 @@ namespace PrometheusNet.Api
             app.UseHttpsRedirection();
             app.UseAuthorization();
 
-            // Middleware de métricas Prometheus
+            // Middleware de metricas Prometheus
             app.UseRouting();
-            app.UseHttpMetrics(); // Métricas automáticas de requisições HTTP
+            app.UseHttpMetrics(); // coleta automatica de requisiÃ§oes
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapMetrics(); // Expor as métricas em /metrics
+                endpoints.MapMetrics(); // expoes /metrics
             });
+
+
+
 
             // Teste inicial
             app.MapGet("/", () => "API de Mensagens com Prometheus!");
 
-            // Métricas personalizadas
+            // Mï¿½tricas personalizadas
             var mensagemCounter = Metrics.CreateCounter("mensagens_cadastradas_total", "Total de mensagens cadastradas.");
-            var mensagemGauge = Metrics.CreateGauge("mensagens_ativas", "Número de mensagens atualmente no repositório.");
+            var mensagemGauge = Metrics.CreateGauge("mensagens_ativas", "Nï¿½mero de mensagens atualmente no repositï¿½rio.");
 
             // Endpoint para cadastrar mensagens
             app.MapPost("/mensagens", (Mensagem mensagem, MensagemRepositorio repo) =>
             {
                 mensagem.Id = Guid.NewGuid();
-                mensagem.DataEnvio = DateTime.UtcNow;
+                mensagem.DataEnvio = DateTime.Now;
 
                 repo.Adicionar(mensagem);
 
-                // Atualizar métricas Prometheus
+                // Atualizar mï¿½tricas Prometheus
                 mensagemCounter.Inc(); // Incrementa o contador
                 mensagemGauge.Set(repo.Listar().Count()); // Atualiza o gauge
 
                 return Results.Ok(mensagem);
             });
 
-            app.MapPrometheusScrapingEndpoint().AllowAnonymous();
-
+      
             app.Run();
         }
     }
