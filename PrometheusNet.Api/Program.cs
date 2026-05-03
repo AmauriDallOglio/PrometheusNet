@@ -29,6 +29,9 @@ namespace PrometheusNet.Api
                            .AddPrometheusExporter();
                 });
 
+ 
+
+
             var app = builder.Build();
 
             // Configurações de ambiente de desenvolvimento
