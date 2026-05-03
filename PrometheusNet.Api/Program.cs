@@ -11,12 +11,12 @@ namespace PrometheusNet.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Adicionar servi�os ao cont�iner
+            // Adicionar serviços ao cont�iner
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // Registro do reposit�rio de mensagens
+            // Registro do repositorio de mensagens
             builder.Services.AddSingleton<MensagemRepositorio>();
 
 
@@ -59,9 +59,9 @@ namespace PrometheusNet.Api
             // Teste inicial
             app.MapGet("/", () => "API de Mensagens com Prometheus!");
 
-            // M�tricas personalizadas
+            // Metricas personalizadas
             var mensagemCounter = Metrics.CreateCounter("mensagens_cadastradas_total", "Total de mensagens cadastradas.");
-            var mensagemGauge = Metrics.CreateGauge("mensagens_ativas", "N�mero de mensagens atualmente no reposit�rio.");
+            var mensagemGauge = Metrics.CreateGauge("mensagens_ativas", "Numero de mensagens atualmente no reposit�rio.");
 
             // Endpoint para cadastrar mensagens
             app.MapPost("/mensagens", (Mensagem mensagem, MensagemRepositorio repo) =>
@@ -71,14 +71,50 @@ namespace PrometheusNet.Api
 
                 repo.Adicionar(mensagem);
 
-                // Atualizar m�tricas Prometheus
+                // Atualizar metricas Prometheus
                 mensagemCounter.Inc(); // Incrementa o contador
                 mensagemGauge.Set(repo.Listar().Count()); // Atualiza o gauge
 
                 return Results.Ok(mensagem);
             });
 
-      
+
+            // Rota que simula erro 400 (Bad Request)
+            app.MapGet("/erro400", () =>
+            {
+                return Results.BadRequest(new { mensagem = "Requisição inválida" });
+            });
+
+            // Rota que simula erro 401 (Unauthorized)
+            app.MapGet("/erro401", () =>
+            {
+                return Results.Unauthorized();
+            });
+
+            // Rota que simula erro 404 (Not Found)
+            app.MapGet("/erro404", () =>
+            {
+                return Results.NotFound(new { mensagem = "Recurso não encontrado" });
+            });
+
+            // Rota que simula erro 500 (Internal Server Error)
+            app.MapGet("/erro500", () =>
+            {
+                try
+                {
+                    throw new Exception("Erro interno simulado");
+                }
+                catch (Exception ex)
+                {
+                    return Results.NotFound(new { mensagem = ex.Message });
+                }
+  
+ 
+            });
+
+
+
+
             app.Run();
         }
     }
